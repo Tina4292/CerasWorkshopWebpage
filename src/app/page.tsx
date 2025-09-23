@@ -47,6 +47,7 @@ export default function Home() {
             <a href="#" className="nav-button font-body font-medium text-gray-800 px-3 py-2 rounded-lg">Custom Orders</a>
             <a href="#" className="nav-button font-body font-medium text-gray-800 px-3 py-2 rounded-lg">About</a>
             <a href="#" className="nav-button font-body font-medium text-gray-800 px-3 py-2 rounded-lg">Contact</a>
+            <a href="/checkout" className="bg-[#d8d68d] hover:bg-[#c8c67d] font-body font-medium text-gray-800 px-4 py-2 rounded-lg transition-colors">Test Checkout</a>
           </nav>
         </div>
       </header>

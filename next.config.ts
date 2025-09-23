@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
-  output: 'export',
+  // Removed 'output: export' to enable API routes for payment processing
   trailingSlash: true,
   images: {
     unoptimized: true
