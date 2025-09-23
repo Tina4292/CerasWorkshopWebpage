@@ -8,8 +8,7 @@
     "crochet",
     "ecommerce",
     "handmade",
-    "nextjs",
-    "square"
+    "nextjs"
   ],
   "scripts": {
     "dev": "next dev --turbopack",
@@ -24,7 +23,6 @@
     "prisma": "^6.16.2",
     "react": "19.1.0",
     "react-dom": "19.1.0",
-    "squareup": "^1.0.0",
     "zod": "^4.1.11"
   },
   "devDependencies": {

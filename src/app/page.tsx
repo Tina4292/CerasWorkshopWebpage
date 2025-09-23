@@ -63,9 +63,12 @@ export default function Home() {
             From cozy blankets to adorable amigurumi, each piece tells a story.
           </p>
           <div className="flex gap-4 justify-center flex-col sm:flex-row">
-            <button className="bg-brand-secondary text-white px-8 py-3 rounded-full font-body font-medium hover:bg-brand-secondary/90 transition-all duration-300 shadow-lg hover:shadow-xl">
-              Shop Now
-            </button>
+            <a 
+              href="/checkout" 
+              className="bg-brand-secondary text-white px-8 py-3 rounded-full font-body font-medium hover:bg-brand-secondary/90 transition-all duration-300 shadow-lg hover:shadow-xl text-center"
+            >
+              Shop Now (Demo Checkout)
+            </a>
             <button className="bg-white text-brand-secondary px-8 py-3 rounded-full font-body font-medium border-2 border-brand-secondary hover:bg-brand-secondary hover:text-white transition-all duration-300">
               Custom Orders
             </button>

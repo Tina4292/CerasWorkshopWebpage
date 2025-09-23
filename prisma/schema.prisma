@@ -130,7 +130,7 @@ model Order {
   shippingZip    String
   
   // Payment info
-  paymentId      String?   // Square payment ID
+  paymentId      String?   // Payment provider transaction ID
   paymentStatus  String    @default("pending") // pending, paid, failed, refunded
   
   // Order items
