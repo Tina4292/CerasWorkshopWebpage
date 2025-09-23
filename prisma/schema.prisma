@@ -1,0 +1,174 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Categories for crochet products
+model Category {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  description String?
+  slug        String    @unique
+  products    Product[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+// Products (crochet items)
+model Product {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String
+  price       Float
+  
+  // Product details
+  materials   String   // "100% cotton yarn"
+  dimensions  String?  // "12x16 inches"
+  weight      String?  // "2 lbs"
+  colors      String   // JSON array of available colors
+  
+  // Inventory
+  inStock     Boolean  @default(true)
+  stockCount  Int      @default(0)
+  
+  // Production info
+  estimatedDays Int    @default(14) // Days to complete
+  difficulty    String @default("Intermediate") // Beginner, Intermediate, Advanced
+  
+  // Relationships
+  categoryId  String
+  category    Category @relation(fields: [categoryId], references: [id])
+  images      ProductImage[]
+  orderItems  OrderItem[]
+  
+  // Metadata
+  featured    Boolean  @default(false)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// Product images
+model ProductImage {
+  id        String  @id @default(cuid())
+  url       String
+  alt       String
+  isPrimary Boolean @default(false)
+  order     Int     @default(0)
+  
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+}
+
+// Customers
+model Customer {
+  id        String  @id @default(cuid())
+  email     String  @unique
+  firstName String
+  lastName  String
+  phone     String?
+  
+  // Addresses
+  addresses CustomerAddress[]
+  orders    Order[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Customer addresses
+model CustomerAddress {
+  id         String  @id @default(cuid())
+  type       String  @default("shipping") // shipping, billing
+  street     String
+  city       String
+  state      String
+  zipCode    String
+  country    String  @default("US")
+  isDefault  Boolean @default(false)
+  
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+// Orders
+model Order {
+  id             String    @id @default(cuid())
+  orderNumber    String    @unique
+  status         String    @default("pending") // pending, confirmed, in_progress, completed, cancelled
+  
+  // Totals
+  subtotal       Float
+  tax            Float     @default(0)
+  shipping       Float     @default(0)
+  total          Float
+  
+  // Customer info
+  customerId     String
+  customer       Customer  @relation(fields: [customerId], references: [id])
+  
+  // Shipping address (snapshot at order time)
+  shippingName   String
+  shippingEmail  String
+  shippingPhone  String?
+  shippingStreet String
+  shippingCity   String
+  shippingState  String
+  shippingZip    String
+  
+  // Payment info
+  paymentId      String?   // Square payment ID
+  paymentStatus  String    @default("pending") // pending, paid, failed, refunded
+  
+  // Order items
+  items          OrderItem[]
+  
+  // Dates
+  orderDate      DateTime  @default(now())
+  estimatedDate  DateTime? // Estimated completion
+  completedDate  DateTime?
+  shippedDate    DateTime?
+  
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}
+
+// Order items
+model OrderItem {
+  id         String  @id @default(cuid())
+  quantity   Int
+  price      Float   // Price at time of order
+  
+  // Custom options
+  color      String?
+  notes      String? // Special requests
+  
+  orderId    String
+  order      Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  
+  productId  String
+  product    Product @relation(fields: [productId], references: [id])
+}
+
+// Admin settings
+model Setting {
+  id    String @id @default(cuid())
+  key   String @unique
+  value String
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

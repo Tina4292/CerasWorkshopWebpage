@@ -1,0 +1,116 @@
+@import "tailwindcss";
+
+:root {
+  /* Cera's Workshop Brand Colors */
+  --brand-main: #f6e8bd;      /* Main cream/beige */
+  --brand-secondary: #ea989b;  /* Soft pink/coral */
+  --brand-accent: #d8d68d;     /* Light sage green */
+  --brand-lightest: #d8d68d;   /* Lightest sage green */
+  
+  /* Custom Colors */
+  --custom-background: #fff4e3; /* Light cream background */
+  --custom-main: #f8e9bd;       /* Main color */
+  --custom-hover: #f8e9bd;      /* Navbar button hover */
+  
+  /* Theme Colors */
+  --background: #ffffff;
+  --foreground: #2d2d2d;
+  --card: #ffffff;
+  --card-foreground: #2d2d2d;
+  --primary: var(--brand-main);
+  --primary-foreground: #2d2d2d;
+  --secondary: var(--brand-secondary);
+  --secondary-foreground: #ffffff;
+  --accent: var(--brand-accent);
+  --accent-foreground: #2d2d2d;
+  --muted: #f8f9fa;
+  --muted-foreground: #6c757d;
+  --border: #e9ecef;
+  --input: #ffffff;
+  --ring: var(--brand-secondary);
+}
+
+/* Custom utility classes for Cera's Workshop */
+.bg-brand-main { background-color: var(--brand-main); }
+.bg-brand-secondary { background-color: var(--brand-secondary); }
+.bg-brand-accent { background-color: var(--brand-accent); }
+.text-brand-main { color: var(--brand-main); }
+.text-brand-secondary { color: var(--brand-secondary); }
+.text-brand-accent { color: var(--brand-accent); }
+.border-brand-main { border-color: var(--brand-main); }
+.border-brand-secondary { border-color: var(--brand-secondary); }
+.border-brand-accent { border-color: var(--brand-accent); }
+
+/* Custom colors */
+.bg-custom-background { background-color: var(--custom-background); }
+.bg-custom-main { background-color: var(--custom-main); }
+.bg-custom-hover { background-color: var(--custom-hover); }
+
+/* Custom hover effects for navigation */
+.nav-button {
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.nav-button:hover {
+  background-color: var(--custom-hover);
+  border-color: var(--brand-accent);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #1a1a1a;
+    --foreground: #f0f0f0;
+    --card: #2d2d2d;
+    --card-foreground: #f0f0f0;
+    --primary-foreground: #1a1a1a;
+    --secondary-foreground: #1a1a1a;
+    --muted: #2d2d2d;
+    --muted-foreground: #a0a0a0;
+    --border: #3d3d3d;
+    --input: #2d2d2d;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+  font-weight: 400;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Soft, accessible typography */
+.font-heading {
+  font-family: var(--font-poppins), var(--font-inter), system-ui, sans-serif;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.font-body {
+  font-family: var(--font-inter), system-ui, sans-serif;
+  font-weight: 400;
+  line-height: 1.6;
+}
+
+.font-light {
+  font-weight: 300;
+}
+
+.font-medium {
+  font-weight: 500;
+}
+
+.font-semibold {
+  font-weight: 600;
+}
+
+/* Handwritten cursive font for brand name */
+.font-cursive {
+  font-family: var(--font-dancing-script), cursive;
+  font-weight: 400;
+  line-height: 1.1;
+}
