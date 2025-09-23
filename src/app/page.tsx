@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect } from "react";
 
 export default function Home() {
@@ -43,7 +44,7 @@ export default function Home() {
           
           {/* Navigation */}
           <nav className="hidden md:flex items-center space-x-6">
-            <a href="#" className="nav-button font-body font-medium text-gray-800 px-3 py-2 rounded-lg">Shop</a>
+            <Link href="/products" className="nav-button font-body font-medium text-gray-800 px-3 py-2 rounded-lg">Shop</Link>
             <a href="#" className="nav-button font-body font-medium text-gray-800 px-3 py-2 rounded-lg">Custom Orders</a>
             <a href="#" className="nav-button font-body font-medium text-gray-800 px-3 py-2 rounded-lg">About</a>
             <a href="#" className="nav-button font-body font-medium text-gray-800 px-3 py-2 rounded-lg">Contact</a>
@@ -101,26 +102,66 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Coming Soon */}
-        <div className="text-center bg-white/90 backdrop-blur-sm rounded-2xl p-8 shadow-lg">
-          <h3 className="text-2xl font-heading font-semibold text-gray-800 mb-4">Store Coming Soon!</h3>
-          <p className="font-body font-light text-gray-700 mb-6 leading-relaxed">
-            We&apos;re putting the finishing touches on our online store. 
-            Soon you&apos;ll be able to browse and purchase our beautiful handmade items directly online.
-          </p>
-          <div className="flex justify-center gap-4 text-sm text-gray-600">
-            <span className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-brand-secondary rounded-full"></div>
-              Product Catalog
-            </span>
-            <span className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-brand-accent rounded-full"></div>
-              Secure Checkout
-            </span>
-            <span className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-brand-main rounded-full"></div>
-              Custom Orders
-            </span>
+        {/* Featured Products */}
+        <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-8 shadow-lg">
+          <div className="text-center mb-8">
+            <h3 className="text-2xl font-heading font-semibold text-gray-800 mb-4">Featured Products</h3>
+            <p className="font-body font-light text-gray-700">
+              Discover our most popular handmade crochet items
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+              <div className="aspect-square bg-gray-100 flex items-center justify-center">
+                <span className="text-4xl">🧶</span>
+              </div>
+              <div className="p-4">
+                <h4 className="font-semibold text-gray-800 mb-2">Cozy Baby Blanket</h4>
+                <p className="text-sm text-gray-600 mb-2">Soft cotton yarn, perfect for newborns</p>
+                <div className="flex justify-between items-center">
+                  <span className="font-bold text-lg">$45.00</span>
+                  <span className="text-sm text-gray-500">14 days</span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+              <div className="aspect-square bg-gray-100 flex items-center justify-center">
+                <span className="text-4xl">🐻</span>
+              </div>
+              <div className="p-4">
+                <h4 className="font-semibold text-gray-800 mb-2">Teddy Bear Amigurumi</h4>
+                <p className="text-sm text-gray-600 mb-2">Adorable stuffed bear, child-safe</p>
+                <div className="flex justify-between items-center">
+                  <span className="font-bold text-lg">$25.00</span>
+                  <span className="text-sm text-gray-500">7 days</span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+              <div className="aspect-square bg-gray-100 flex items-center justify-center">
+                <span className="text-4xl">🧣</span>
+              </div>
+              <div className="p-4">
+                <h4 className="font-semibold text-gray-800 mb-2">Chunky Knit Scarf</h4>
+                <p className="text-sm text-gray-600 mb-2">Warm wool blend, multiple colors</p>
+                <div className="flex justify-between items-center">
+                  <span className="font-bold text-lg">$35.00</span>
+                  <span className="text-sm text-gray-500">10 days</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="text-center">
+            <Link 
+              href="/products" 
+              className="inline-block bg-[#d8d68d] hover:bg-[#c8c67d] text-gray-800 font-medium px-6 py-3 rounded-lg transition-colors"
+            >
+              View All Products
+            </Link>
           </div>
         </div>
       </main>
