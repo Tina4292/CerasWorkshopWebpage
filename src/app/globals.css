@@ -5,12 +5,10 @@
   --brand-main: #f6e8bd;      /* Main cream/beige */
   --brand-secondary: #ea989b;  /* Soft pink/coral */
   --brand-accent: #d8d68d;     /* Light sage green */
-  --brand-lightest: #d8d68d;   /* Lightest sage green */
   
   /* Custom Colors */
   --custom-background: #fff4e3; /* Light cream background */
-  --custom-main: #f8e9bd;       /* Main color */
-  --custom-hover: #f8e9bd;      /* Navbar button hover */
+  --custom-main: #f8e9bd;       /* Main golden color (used for navbar and hover) */
   
   /* Theme Colors */
   --background: #ffffff;
@@ -44,7 +42,7 @@
 /* Custom colors */
 .bg-custom-background { background-color: var(--custom-background); }
 .bg-custom-main { background-color: var(--custom-main); }
-.bg-custom-hover { background-color: var(--custom-hover); }
+.bg-custom-hover { background-color: var(--custom-main); }
 
 /* Custom hover effects for navigation */
 .nav-button {
@@ -53,7 +51,7 @@
 }
 
 .nav-button:hover {
-  background-color: var(--custom-hover);
+  background-color: var(--custom-main);
   border-color: var(--brand-accent);
 }
 
