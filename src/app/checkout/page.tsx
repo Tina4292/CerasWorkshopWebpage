@@ -4,12 +4,12 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
-import SquarePaymentForm from '../../components/SquarePaymentForm';
+import MockPaymentForm from '../../components/MockPaymentForm';
 
 interface PaymentResult {
   success: boolean;
-  payment?: object;
-  paymentId?: string;
+  orderId?: string;
+  transactionId?: string;
 }
 
 interface CartItem {
@@ -61,15 +61,37 @@ export default function CheckoutPage() {
   const total = subtotal + shipping + tax;
 
   const handlePaymentSuccess = (result: PaymentResult) => {
-    console.log('Payment successful:', result);
     setPaymentResult(result);
     setError('');
   };
 
   const handlePaymentError = (errorMessage: string) => {
-    console.error('Payment error:', errorMessage);
     setError(errorMessage);
     setPaymentResult(null);
+  };
+
+  const updateCartInStorage = (updatedCart: CartItem[]) => {
+    localStorage.setItem('cart', JSON.stringify(updatedCart));
+    setCartItems(updatedCart);
+    
+    // Dispatch event to update navigation cart count
+    window.dispatchEvent(new CustomEvent('cartUpdated', {
+      detail: { cart: updatedCart }
+    }));
+  };
+
+  const updateQuantity = (index: number, newQuantity: number) => {
+    if (newQuantity < 1) return;
+    
+    const updatedCart = cartItems.map((item, i) => 
+      i === index ? { ...item, quantity: newQuantity } : item
+    );
+    updateCartInStorage(updatedCart);
+  };
+
+  const removeItem = (index: number) => {
+    const updatedCart = cartItems.filter((_, i) => i !== index);
+    updateCartInStorage(updatedCart);
   };
 
   if (paymentResult) {
@@ -93,8 +115,12 @@ export default function CheckoutPage() {
               <h2 className="text-lg font-semibold mb-4">Order Details</h2>
               <div className="text-left space-y-2">
                 <div className="flex justify-between">
-                  <span>Payment ID:</span>
-                  <span className="font-mono text-sm">{paymentResult.paymentId}</span>
+                  <span>Order ID:</span>
+                  <span className="font-mono text-sm">{paymentResult.orderId}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Transaction ID:</span>
+                  <span className="font-mono text-sm">{paymentResult.transactionId}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Amount:</span>
@@ -149,18 +175,65 @@ export default function CheckoutPage() {
             <h2 className="text-xl font-semibold mb-6">Order Summary</h2>
             
             <div className="space-y-4 mb-6">
-              {cartItems.map((item: CartItem, index: number) => (
-                <div key={index} className="flex justify-between items-center pb-4 border-b">
-                  <div>
-                    <h3 className="font-medium text-gray-900">{item.name}</h3>
-                    <p className="text-gray-600">Quantity: {item.quantity}</p>
-                    {item.color && item.color !== 'Default' && (
-                      <p className="text-gray-600">Color: {item.color}</p>
-                    )}
-                  </div>
-                  <span className="font-semibold">${(item.price * item.quantity).toFixed(2)}</span>
+              {cartItems.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-gray-500 mb-4">Your cart is empty</p>
+                  <Link 
+                    href="/products"
+                    className="inline-block bg-purple-500 text-white px-6 py-2 rounded-md hover:bg-purple-600 transition-colors"
+                  >
+                    Continue Shopping
+                  </Link>
                 </div>
-              ))}
+              ) : (
+                cartItems.map((item: CartItem, index: number) => (
+                  <div key={index} className="pb-4 border-b">
+                    <div className="flex justify-between items-start mb-3">
+                      <div className="flex-1">
+                        <h3 className="font-medium text-gray-900 mb-1">{item.name}</h3>
+                        {item.color && item.color !== 'Default' && (
+                          <p className="text-gray-600 text-sm">Color: {item.color}</p>
+                        )}
+                        <p className="text-gray-600 text-sm">${item.price.toFixed(2)} each</p>
+                      </div>
+                      <button
+                        onClick={() => removeItem(index)}
+                        className="text-red-500 hover:text-red-700 p-1 transition-colors"
+                        title="Remove item"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
+                    </div>
+                    
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center space-x-3">
+                        <span className="text-sm text-gray-600">Quantity:</span>
+                        <div className="flex items-center border border-gray-300 rounded-md">
+                          <button
+                            onClick={() => updateQuantity(index, item.quantity - 1)}
+                            disabled={item.quantity <= 1}
+                            className="px-3 py-1 text-gray-600 hover:text-gray-800 disabled:text-gray-400 disabled:cursor-not-allowed transition-colors"
+                          >
+                            −
+                          </button>
+                          <span className="px-3 py-1 border-l border-r border-gray-300 min-w-[40px] text-center">
+                            {item.quantity}
+                          </span>
+                          <button
+                            onClick={() => updateQuantity(index, item.quantity + 1)}
+                            className="px-3 py-1 text-gray-600 hover:text-gray-800 transition-colors"
+                          >
+                            +
+                          </button>
+                        </div>
+                      </div>
+                      <span className="font-semibold text-lg">${(item.price * item.quantity).toFixed(2)}</span>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
 
             <div className="space-y-2 border-t pt-4">
@@ -184,20 +257,38 @@ export default function CheckoutPage() {
           </div>
 
           {/* Payment Form */}
-          <div>
-            {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md mb-6">
-                <p className="font-medium">Payment Error</p>
-                <p className="text-sm">{error}</p>
+          {cartItems.length > 0 ? (
+            <div>
+              {error && (
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md mb-6">
+                  <p className="font-medium">Payment Error</p>
+                  <p className="text-sm">{error}</p>
+                </div>
+              )}
+              
+              <MockPaymentForm
+                amount={total}
+                onPaymentSuccess={handlePaymentSuccess}
+                onPaymentError={handlePaymentError}
+              />
+            </div>
+          ) : (
+            <div className="bg-white rounded-lg shadow-md p-6 text-center">
+              <div className="text-gray-500 mb-4">
+                <svg className="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                </svg>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">Your cart is empty</h3>
+                <p className="text-gray-600 mb-6">Add some items to your cart to continue with checkout.</p>
+                <Link 
+                  href="/products"
+                  className="inline-block bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-md hover:from-purple-600 hover:to-pink-600 transition-all duration-200 shadow-lg hover:shadow-xl"
+                >
+                  Browse Products
+                </Link>
               </div>
-            )}
-            
-            <SquarePaymentForm
-              amount={total}
-              onPaymentSuccess={handlePaymentSuccess}
-              onPaymentError={handlePaymentError}
-            />
-          </div>
+            </div>
+          )}
         </div>
       </div>
       </div>

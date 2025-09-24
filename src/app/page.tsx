@@ -3,6 +3,8 @@
 import Image from "next/image";
 import Link from 'next/link';
 import { useEffect, useState } from "react";
+import Navigation from '@/components/Navigation';
+import Footer from '@/components/Footer';
 
 // Product type definition
 interface Product {
@@ -116,36 +118,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-custom-background">
-      {/* Header */}
-      <header className="sticky top-0 bg-custom-main backdrop-blur-sm border-b border-brand-accent transition-shadow duration-300 z-50">
-        <div className="container mx-auto px-4 py-4 md:py-6 flex items-center justify-between">
-          {/* Brand Container */}
-          <Link href="/" aria-label="Cera's Workshop home" className="flex items-center gap-4">
-            <div className="relative h-[5em] w-[5em] flex items-center justify-center">
-              <Image
-                src="/logo.png"
-                alt="Cera's Workshop logo"
-                width={100}
-                height={100}
-                className="h-full w-full object-contain align-middle"
-                priority
-              />
-            </div>
-            <h1 className="text-2xl md:text-3xl font-cursive text-gray-800">
-              Cera&apos;s Workshop
-            </h1>
-          </Link>
-
-          {/* Navigation */}
-          <nav className="hidden md:flex items-center space-x-6">
-            <Link href="/products" className="nav-button font-body font-medium text-gray-800 px-3 py-2 rounded-lg">Shop</Link>
-            <Link href="/custom-orders" className="nav-button font-body font-medium text-gray-800 px-3 py-2 rounded-lg">Custom Orders</Link>
-            <a href="#" className="nav-button font-body font-medium text-gray-800 px-3 py-2 rounded-lg">About</a>
-            <a href="#" className="nav-button font-body font-medium text-gray-800 px-3 py-2 rounded-lg">Contact</a>
-            <Link href="/checkout" className="bg-brand-secondary hover:bg-brand-secondary/90 font-body font-medium text-white px-4 py-2 rounded-lg transition-colors">🛒 Cart</Link>
-          </nav>
-        </div>
-      </header>
+      <Navigation />
 
       {/* Hero Section */}
       <main className="container mx-auto px-4 py-16">
@@ -175,27 +148,20 @@ export default function HomePage() {
 
         {/* Featured Categories */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-            <div className="w-16 h-16 bg-brand-accent rounded-full flex items-center justify-center mb-4 mx-auto">
-              <span className="text-2xl"></span>
-            </div>
-            <h3 className="text-xl font-heading font-semibold text-gray-800 mb-2 text-center">Amigurumi</h3>
+          <Link href="/products?category=amigurumi" className="bg-white/90 backdrop-blur-sm rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 group">
+            <h3 className="text-2xl font-heading font-semibold text-gray-800 mb-3 text-center group-hover:text-brand-accent transition-colors">Amigurumi</h3>
             <p className="font-body font-light text-gray-600 text-center">Adorable handmade plushies and stuffed animals</p>
-          </div>
-          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-            <div className="w-16 h-16 bg-brand-main rounded-full flex items-center justify-center mb-4 mx-auto">
-              <span className="text-2xl"></span>
-            </div>
-            <h3 className="text-xl font-heading font-semibold text-gray-800 mb-2 text-center">Wearables</h3>
+          </Link>
+          
+          <Link href="/products?category=wearables" className="bg-white/90 backdrop-blur-sm rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 group">
+            <h3 className="text-2xl font-heading font-semibold text-gray-800 mb-3 text-center group-hover:text-brand-main transition-colors">Wearables</h3>
             <p className="font-body font-light text-gray-600 text-center">Bandanas, scarves, hats, and cozy accessories</p>
-          </div>
-          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-            <div className="w-16 h-16 bg-brand-secondary rounded-full flex items-center justify-center mb-4 mx-auto">
-              <span className="text-2xl"></span>
-            </div>
-            <h3 className="text-xl font-heading font-semibold text-gray-800 mb-2 text-center">Accessories</h3>
+          </Link>
+          
+          <Link href="/products?category=accessories" className="bg-white/90 backdrop-blur-sm rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 group">
+            <h3 className="text-2xl font-heading font-semibold text-gray-800 mb-3 text-center group-hover:text-brand-secondary transition-colors">Accessories</h3>
             <p className="font-body font-light text-gray-600 text-center">Purses, kindle sleeves, bookmarks, and keychains</p>
-          </div>
+          </Link>
         </div>
 
         {/* Featured Products Section */}
@@ -309,12 +275,7 @@ export default function HomePage() {
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="bg-white/90 backdrop-blur-sm border-t border-brand-accent/20 mt-16">
-        <div className="container mx-auto px-4 py-8 text-center">
-          <p className="font-body font-light text-gray-600"> 2024 Cera&apos;s Workshop. Made with  and lots of yarn.</p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

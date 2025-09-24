@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from 'react';
-import Image from "next/image";
 import Link from 'next/link';
+import Navigation from '@/components/Navigation';
+import Footer from '@/components/Footer';
 
 export default function CustomOrdersPage() {
   const [formData, setFormData] = useState({
@@ -65,35 +66,7 @@ export default function CustomOrdersPage() {
   if (submitted) {
     return (
       <div className="min-h-screen bg-custom-background">
-        {/* Header */}
-        <header className="sticky top-0 bg-custom-main backdrop-blur-sm border-b border-brand-accent transition-shadow duration-300 z-50">
-          <div className="container mx-auto px-4 py-4 md:py-6 flex items-center justify-between">
-            {/* Brand Container */}
-            <Link href="/" aria-label="Cera's Workshop home" className="flex items-center gap-4">
-              <div className="relative h-[5em] w-[5em] flex items-center justify-center">
-                <Image
-                  src="/logo.png"
-                  alt="Cera's Workshop logo"
-                  width={100}
-                  height={100}
-                  className="h-full w-full object-contain align-middle"
-                  priority
-                />
-              </div>
-              <h1 className="text-2xl md:text-3xl font-cursive text-gray-800">
-                Cera&apos;s Workshop
-              </h1>
-            </Link>
-
-            {/* Navigation */}
-            <nav className="hidden md:flex items-center space-x-6">
-              <Link href="/products" className="nav-button font-body font-medium text-gray-800 px-3 py-2 rounded-lg">Shop</Link>
-              <Link href="/custom-orders" className="nav-button font-body font-medium text-brand-secondary px-3 py-2 rounded-lg">Custom Orders</Link>
-              <a href="#" className="nav-button font-body font-medium text-gray-800 px-3 py-2 rounded-lg">About</a>
-              <a href="#" className="nav-button font-body font-medium text-gray-800 px-3 py-2 rounded-lg">Contact</a>
-            </nav>
-          </div>
-        </header>
+        <Navigation />
 
         {/* Success Message */}
         <main className="container mx-auto px-4 py-16">
@@ -129,35 +102,7 @@ export default function CustomOrdersPage() {
 
   return (
     <div className="min-h-screen bg-custom-background">
-      {/* Header */}
-      <header className="sticky top-0 bg-custom-main backdrop-blur-sm border-b border-brand-accent transition-shadow duration-300 z-50">
-        <div className="container mx-auto px-4 py-4 md:py-6 flex items-center justify-between">
-          {/* Brand Container */}
-          <Link href="/" aria-label="Cera's Workshop home" className="flex items-center gap-4">
-            <div className="relative h-[5em] w-[5em] flex items-center justify-center">
-              <Image
-                src="/logo.png"
-                alt="Cera's Workshop logo"
-                width={100}
-                height={100}
-                className="h-full w-full object-contain align-middle"
-                priority
-              />
-            </div>
-            <h1 className="text-2xl md:text-3xl font-cursive text-gray-800">
-              Cera&apos;s Workshop
-            </h1>
-          </Link>
-
-          {/* Navigation */}
-          <nav className="hidden md:flex items-center space-x-6">
-            <Link href="/products" className="nav-button font-body font-medium text-gray-800 px-3 py-2 rounded-lg">Shop</Link>
-            <Link href="/custom-orders" className="nav-button font-body font-medium text-brand-secondary px-3 py-2 rounded-lg">Custom Orders</Link>
-            <a href="#" className="nav-button font-body font-medium text-gray-800 px-3 py-2 rounded-lg">About</a>
-            <a href="#" className="nav-button font-body font-medium text-gray-800 px-3 py-2 rounded-lg">Contact</a>
-          </nav>
-        </div>
-      </header>
+      <Navigation />
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-16">
@@ -388,6 +333,8 @@ export default function CustomOrdersPage() {
           </div>
         </div>
       </main>
+
+      <Footer />
     </div>
   );
 }
