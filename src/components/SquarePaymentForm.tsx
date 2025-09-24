@@ -3,6 +3,13 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { SquarePayments, SquareCard, TokenResult } from '../types/square';
 
+// Global state to prevent multiple Square SDK initializations across all component instances
+let globalSquareInitialized = false;
+let globalLocationId: string | null = null;
+let globalCard: SquareCard | null = null;
+let globalPayments: SquarePayments | null = null;
+let globalInitializationPromise: Promise<void> | null = null;
+
 interface PaymentResult {
   success: boolean;
   payment?: object;
@@ -20,11 +27,28 @@ export default function SquarePaymentForm({
   onPaymentSuccess, 
   onPaymentError 
 }: PaymentFormProps) {
+  // Add global error handler for DOM-related errors that Square SDK might cause
+  useEffect(() => {
+    const handleError = (event: ErrorEvent) => {
+      if (event.message.includes('removeChild') || event.message.includes('not a child')) {
+        console.warn('Caught DOM manipulation error (likely from Square SDK):', event.message);
+        event.preventDefault(); // Prevent the error from breaking the app
+        return true;
+      }
+    };
+
+    window.addEventListener('error', handleError);
+    return () => window.removeEventListener('error', handleError);
+  }, []);
+
   const [isLoading, setIsLoading] = useState(false);
-  const [card, setCard] = useState<SquareCard | null>(null);
-  const [payments, setPayments] = useState<SquarePayments | null>(null);
-  const [locationId, setLocationId] = useState<string>('');
+  const [card, setCard] = useState<SquareCard | null>(globalCard);
+  const [payments, setPayments] = useState<SquarePayments | null>(globalPayments);
+  const [locationId, setLocationId] = useState<string>(globalLocationId || '');
   const cardRef = useRef<HTMLDivElement>(null);
+  const initializedRef = useRef(globalSquareInitialized);
+  const isInitializingRef = useRef(false);
+  const mountedRef = useRef(true);
   const [customerInfo, setCustomerInfo] = useState({
     name: '',
     email: '',
@@ -32,11 +56,17 @@ export default function SquarePaymentForm({
   });
 
   const fetchLocationId = useCallback(async () => {
+    if (globalLocationId) {
+      setLocationId(globalLocationId);
+      return;
+    }
+    
     try {
       const response = await fetch('/api/locations');
       const result = await response.json();
       
       if (result.success && result.location.id) {
+        globalLocationId = result.location.id;
         setLocationId(result.location.id);
       } else {
         throw new Error('Failed to get location ID');
@@ -49,29 +79,105 @@ export default function SquarePaymentForm({
 
   const initializeSquare = useCallback(async () => {
     try {
-      if (!window.Square) {
-        throw new Error('Square SDK not loaded');
+      // If we already have a global card instance, reuse it
+      if (globalCard && globalSquareInitialized) {
+        setCard(globalCard);
+        setPayments(globalPayments);
+        return;
       }
 
-      const applicationId = process.env.NEXT_PUBLIC_SQUARE_APPLICATION_ID;
-      if (!applicationId) {
-        throw new Error('Square Application ID not configured');
+      // If there's already an initialization in progress, wait for it
+      if (globalInitializationPromise) {
+        await globalInitializationPromise;
+        if (globalCard) {
+          setCard(globalCard);
+          setPayments(globalPayments);
+          return;
+        }
       }
 
-      const payments = window.Square.payments(applicationId);
-      setPayments(payments);
+      // Create new initialization promise
+      globalInitializationPromise = (async () => {
+        if (!window.Square) {
+          throw new Error('Square SDK not loaded');
+        }
 
-      const card = await payments.card();
-      await card.attach('#card-container');
-      setCard(card);
+        const applicationId = process.env.NEXT_PUBLIC_SQUARE_APPLICATION_ID;
+        if (!applicationId) {
+          throw new Error('Square Application ID not configured');
+        }
+
+        // Wait for the container to exist in the DOM
+        const waitForContainer = () => {
+          return new Promise<HTMLElement>((resolve, reject) => {
+            const maxAttempts = 20;
+            let attempts = 0;
+            
+            const checkContainer = () => {
+              const container = document.getElementById('card-container');
+              if (container) {
+                resolve(container);
+              } else if (attempts < maxAttempts) {
+                attempts++;
+                setTimeout(checkContainer, 100);
+              } else {
+                reject(new Error('Card container not found after waiting'));
+              }
+            };
+            
+            checkContainer();
+          });
+        };
+
+        const newPayments = window.Square.payments(applicationId);
+        globalPayments = newPayments;
+
+        // Wait for container and clear it before attaching
+        const container = await waitForContainer();
+        
+        // Ensure container is completely clean and detached from any Square instances
+        container.innerHTML = '';
+        container.className = ''; // Clear any Square-added classes
+        
+        // Add a small delay to ensure any pending DOM operations complete
+        await new Promise(resolve => setTimeout(resolve, 50));
+
+        const newCard = await newPayments.card();
+        await newCard.attach('#card-container');
+        
+        globalCard = newCard;
+        globalSquareInitialized = true;
+      })();
+
+      await globalInitializationPromise;
+      
+      // Set local state
+      setCard(globalCard);
+      setPayments(globalPayments);
+      
     } catch (error) {
       console.error('Square initialization error:', error);
+      globalInitializationPromise = null; // Reset on error
       onPaymentError('Failed to initialize payment form');
     }
   }, [onPaymentError]);
 
   // Load Square Web SDK
   useEffect(() => {
+    mountedRef.current = true;
+    
+    if (globalSquareInitialized && globalCard) {
+      setCard(globalCard);
+      setPayments(globalPayments);
+      setLocationId(globalLocationId || '');
+      initializedRef.current = true;
+      return;
+    }
+    
+    if (initializedRef.current || isInitializingRef.current) {
+      return;
+    }
+    
     const loadSquareSDK = () => {
       return new Promise<void>((resolve, reject) => {
         if (window.Square) {
@@ -87,17 +193,55 @@ export default function SquarePaymentForm({
       });
     };
 
-    loadSquareSDK()
-      .then(fetchLocationId)
-      .then(initializeSquare)
-      .catch((error) => {
-        console.error('Failed to load Square SDK:', error);
-        onPaymentError('Failed to load payment system');
-      });
+    const initialize = async () => {
+      if (isInitializingRef.current || !mountedRef.current) {
+        return;
+      }
+      
+      isInitializingRef.current = true;
+      try {
+        await loadSquareSDK();
+        if (!mountedRef.current) return; // Check if still mounted
+        
+        await fetchLocationId();
+        if (!mountedRef.current) return; // Check if still mounted
+        
+        // Small delay to ensure DOM is fully ready
+        await new Promise(resolve => setTimeout(resolve, 100));
+        if (!mountedRef.current) return; // Check if still mounted
+        
+        await initializeSquare();
+        if (mountedRef.current) {
+          initializedRef.current = true;
+        }
+      } catch (error) {
+        if (mountedRef.current) {
+          console.error('Failed to load Square SDK:', error);
+          onPaymentError('Failed to load payment system');
+        }
+      } finally {
+        isInitializingRef.current = false;
+      }
+    };
+
+    // Use a small timeout to ensure component is fully mounted
+    const timeoutId = setTimeout(initialize, 50);
+
+    // Cleanup function
+    return () => {
+      mountedRef.current = false;
+      clearTimeout(timeoutId);
+      // Don't destroy global card on unmount, other instances might need it
+      initializedRef.current = false;
+      isInitializingRef.current = false;
+    };
   }, [fetchLocationId, initializeSquare, onPaymentError]);
 
   const handlePayment = async () => {
-    if (!card || !payments) {
+    const currentCard = card || globalCard;
+    const currentPayments = payments || globalPayments;
+    
+    if (!currentCard || !currentPayments) {
       onPaymentError('Payment form not ready');
       return;
     }
@@ -111,7 +255,7 @@ export default function SquarePaymentForm({
 
     try {
       // Tokenize the card
-      const result: TokenResult = await card.tokenize();
+      const result: TokenResult = await currentCard.tokenize();
       
       if (result.status !== 'OK' || !result.token) {
         const errorMessage = result.errors?.map(e => e.message).join(', ') || 'Card tokenization failed';
@@ -210,7 +354,13 @@ export default function SquarePaymentForm({
           ref={cardRef}
           className="border border-gray-300 rounded-md p-3 min-h-[50px] bg-white"
           style={{ minHeight: '56px' }}
-        />
+        >
+          {!card && (
+            <div className="flex items-center justify-center h-14 text-gray-400">
+              Loading payment form...
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Order Summary */}

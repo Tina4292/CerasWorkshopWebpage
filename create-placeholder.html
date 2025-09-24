@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Image Placeholder Creator</title>
+</head>
+<body>
+    <canvas id="canvas" width="400" height="400"></canvas>
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Set background color - soft peachy pink
+        ctx.fillStyle = '#FFE4E1';
+        ctx.fillRect(0, 0, 400, 400);
+        
+        // Draw cute border
+        ctx.strokeStyle = '#FFB6C1';
+        ctx.lineWidth = 8;
+        ctx.strokeRect(4, 4, 392, 392);
+        
+        // Draw inner border with dashed pattern
+        ctx.setLineDash([10, 5]);
+        ctx.strokeStyle = '#F0A0A0';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(20, 20, 360, 360);
+        ctx.setLineDash([]);
+        
+        // Draw cute yarn ball
+        ctx.beginPath();
+        ctx.arc(200, 150, 40, 0, 2 * Math.PI);
+        ctx.fillStyle = '#FFD700';
+        ctx.fill();
+        ctx.strokeStyle = '#DAA520';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        
+        // Yarn ball details
+        ctx.beginPath();
+        ctx.strokeStyle = '#DAA520';
+        ctx.lineWidth = 1;
+        ctx.arc(200, 150, 35, 0, Math.PI);
+        ctx.stroke();
+        ctx.arc(200, 150, 25, Math.PI/4, Math.PI*3/4);
+        ctx.stroke();
+        
+        // Cute crochet hook
+        ctx.strokeStyle = '#8B4513';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(170, 120);
+        ctx.lineTo(230, 120);
+        ctx.stroke();
+        
+        // Hook tip
+        ctx.beginPath();
+        ctx.arc(232, 120, 3, 0, 2 * Math.PI);
+        ctx.fillStyle = '#A0522D';
+        ctx.fill();
+        
+        // Main text
+        ctx.fillStyle = '#8B4513';
+        ctx.font = 'bold 28px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Images', 200, 260);
+        ctx.fillText('Coming Soon!', 200, 295);
+        
+        // Cute subtitle
+        ctx.font = '16px Arial';
+        ctx.fillStyle = '#666';
+        ctx.fillText('♡ Handmade with Love ♡', 200, 330);
+        
+        // Add some decorative stars
+        const drawStar = (x, y, size) => {
+            ctx.fillStyle = '#FFD700';
+            ctx.font = `${size}px Arial`;
+            ctx.fillText('★', x, y);
+        };
+        
+        drawStar(80, 80, 20);
+        drawStar(320, 80, 16);
+        drawStar(60, 320, 18);
+        drawStar(340, 340, 22);
+        
+        // Download the image
+        setTimeout(() => {
+            const link = document.createElement('a');
+            link.download = 'images-coming-soon.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        }, 500);
+    </script>
+</body>
+</html>

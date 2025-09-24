@@ -1,7 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Navigation from '@/components/Navigation';
+import Footer from '@/components/Footer';
 import SquarePaymentForm from '../../components/SquarePaymentForm';
 
 interface PaymentResult {
@@ -10,30 +12,53 @@ interface PaymentResult {
   paymentId?: string;
 }
 
+interface CartItem {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+  color?: string;
+  image?: string;
+}
+
 export default function CheckoutPage() {
   const [paymentResult, setPaymentResult] = useState<PaymentResult | null>(null);
   const [error, setError] = useState<string>('');
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
 
-  // Sample order data
-  const sampleOrder = {
-    items: [
-      {
-        name: 'Handmade Crochet Scarf',
-        price: 35.00,
-        quantity: 1,
-      },
-      {
-        name: 'Crochet Baby Blanket',
-        price: 45.00,
-        quantity: 1,
+  useEffect(() => {
+    // Load cart data from localStorage
+    const loadCartData = () => {
+      try {
+        // Try new cart format first
+        const cart = localStorage.getItem('cart');
+        if (cart) {
+          const cartArray = JSON.parse(cart);
+          setCartItems(cartArray);
+        } else {
+          // Fall back to old single item format
+          const cartItem = localStorage.getItem('cartItem');
+          if (cartItem) {
+            const item = JSON.parse(cartItem);
+            setCartItems([item]);
+          } else {
+            setCartItems([]);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading cart data:', error);
+        setCartItems([]);
       }
-    ],
-    shipping: 8.99,
-    tax: 7.19,
-  };
+    };
 
-  const subtotal = sampleOrder.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const total = subtotal + sampleOrder.shipping + sampleOrder.tax;
+    loadCartData();
+  }, []);
+
+  const shipping = 8.99;
+  const tax = 7.19;
+
+  const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const total = subtotal + shipping + tax;
 
   const handlePaymentSuccess = (result: PaymentResult) => {
     console.log('Payment successful:', result);
@@ -49,7 +74,9 @@ export default function CheckoutPage() {
 
   if (paymentResult) {
     return (
-      <div className="min-h-screen bg-[#fff4e3] py-12">
+      <div className="min-h-screen bg-custom-background">
+        <Navigation />
+        <div className="py-12">
         <div className="max-w-2xl mx-auto px-4">
           <div className="bg-white rounded-lg shadow-lg p-8 text-center">
             <div className="mb-6">
@@ -87,7 +114,7 @@ export default function CheckoutPage() {
               <div className="space-x-4">
                 <Link 
                   href="/"
-                  className="inline-block bg-[#d8d68d] hover:bg-[#c8c67d] text-gray-800 font-medium py-2 px-6 rounded-md transition-colors"
+                  className="inline-block bg-brand-accent hover:bg-brand-accent/80 text-gray-800 font-medium py-2 px-6 rounded-md transition-colors"
                 >
                   Continue Shopping
                 </Link>
@@ -95,12 +122,16 @@ export default function CheckoutPage() {
             </div>
           </div>
         </div>
+        </div>
+        <Footer />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#fff4e3] py-8">
+    <div className="min-h-screen bg-custom-background">
+      <Navigation />
+      <div className="py-8">
       <div className="max-w-6xl mx-auto px-4">
         <div className="mb-8">
           <Link 
@@ -118,11 +149,14 @@ export default function CheckoutPage() {
             <h2 className="text-xl font-semibold mb-6">Order Summary</h2>
             
             <div className="space-y-4 mb-6">
-              {sampleOrder.items.map((item, index) => (
+              {cartItems.map((item: CartItem, index: number) => (
                 <div key={index} className="flex justify-between items-center pb-4 border-b">
                   <div>
                     <h3 className="font-medium text-gray-900">{item.name}</h3>
                     <p className="text-gray-600">Quantity: {item.quantity}</p>
+                    {item.color && item.color !== 'Default' && (
+                      <p className="text-gray-600">Color: {item.color}</p>
+                    )}
                   </div>
                   <span className="font-semibold">${(item.price * item.quantity).toFixed(2)}</span>
                 </div>
@@ -136,11 +170,11 @@ export default function CheckoutPage() {
               </div>
               <div className="flex justify-between">
                 <span>Shipping:</span>
-                <span>${sampleOrder.shipping.toFixed(2)}</span>
+                <span>${shipping.toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
                 <span>Tax:</span>
-                <span>${sampleOrder.tax.toFixed(2)}</span>
+                <span>${tax.toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-lg font-bold border-t pt-2">
                 <span>Total:</span>
@@ -166,6 +200,8 @@ export default function CheckoutPage() {
           </div>
         </div>
       </div>
+      </div>
+      <Footer />
     </div>
   );
 }

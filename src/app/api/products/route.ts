@@ -34,15 +34,17 @@ export async function GET(request: NextRequest) {
     if (search) {
       where.OR = [
         { name: { contains: search, mode: 'insensitive' } },
-        { description: { contains: search, mode: 'insensitive' } },
-        { materials: { contains: search, mode: 'insensitive' } },
+        { yarn: { contains: search, mode: 'insensitive' } },
+        { hookSize: { contains: search, mode: 'insensitive' } },
+        { status: { contains: search, mode: 'insensitive' } },
       ];
     }
 
     // Build orderBy clause
     let orderBy: 
       | { name: 'asc' }
-      | { price: 'asc' | 'desc' }
+      | { salePrice: 'asc' | 'desc' }
+      | { timeMinutes: 'asc' | 'desc' }
       | { createdAt: 'desc' }
       | Array<{ featured: 'desc' } | { createdAt: 'desc' }> = { createdAt: 'desc' };
     switch (sort) {
@@ -50,10 +52,16 @@ export async function GET(request: NextRequest) {
         orderBy = { name: 'asc' };
         break;
       case 'price-low':
-        orderBy = { price: 'asc' };
+        orderBy = { salePrice: 'asc' };
         break;
       case 'price-high':
-        orderBy = { price: 'desc' };
+        orderBy = { salePrice: 'desc' };
+        break;
+      case 'time-short':
+        orderBy = { timeMinutes: 'asc' };
+        break;
+      case 'time-long':
+        orderBy = { timeMinutes: 'desc' };
         break;
       case 'newest':
         orderBy = { createdAt: 'desc' };

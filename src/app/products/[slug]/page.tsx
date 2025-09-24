@@ -4,33 +4,47 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
+import Navigation from '@/components/Navigation';
+import Footer from '@/components/Footer';
 
 interface Product {
   id: string;
   name: string;
   slug: string;
-  description: string;
-  price: number;
-  materials: string;
-  dimensions?: string;
-  weight?: string;
-  colors: string;
-  inStock: boolean;
-  stockCount: number;
-  estimatedDays: number;
-  difficulty: string;
+  // Materials and costs
+  yarn: string;
+  yarnGrams: number;
+  yarnCost: number;
+  polyfilGrams: number;
+  polyfilCost: number;
+  eyesUsed: string;
+  eyesCost: number;
+  // Production details
+  hookSize: string;
+  timeMinutes: number;
+  // Pricing calculations
+  laborWage: number;
+  calculatedPrice: number;
+  salePrice: number;
+  profitMargin: number;
+  // Status and presentation
+  status: string; // in_stock, made_to_order, draft
+  image?: string;
   featured: boolean;
+  active: boolean;
+  colors?: string; // JSON string of available colors
+  createdAt: string;
+  updatedAt: string;
   category: {
     id: string;
     name: string;
     slug: string;
-  };
+  } | null;
   images: {
     id: string;
     url: string;
     alt: string;
     isPrimary: boolean;
-    order: number;
   }[];
 }
 
@@ -42,50 +56,54 @@ export default function ProductDetailPage() {
   const [selectedImage, setSelectedImage] = useState<number>(0);
   const [quantity, setQuantity] = useState<number>(1);
   const [selectedColor, setSelectedColor] = useState<string>('');
+  const [availableColors, setAvailableColors] = useState<string[]>(['Default']);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>('');
 
   useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(`/api/products/${slug}`);
+        if (!response.ok) {
+          if (response.status === 404) {
+            setError('Product not found');
+          } else {
+            setError('Failed to load product');
+          }
+          return;
+        }
+        
+        const data = await response.json();
+        setProduct(data);
+        
+        // Parse colors if available
+        if (data.colors) {
+          try {
+            const colors = JSON.parse(data.colors);
+            setAvailableColors(Array.isArray(colors) ? colors : [colors]);
+            setSelectedColor(Array.isArray(colors) ? colors[0] : colors);
+          } catch (err) {
+            console.error('Error parsing colors:', err);
+            setAvailableColors(['Default']);
+            setSelectedColor('Default');
+          }
+        } else {
+          setAvailableColors(['Default']);
+          setSelectedColor('Default');
+        }
+      } catch (error) {
+        console.error('Error fetching product:', error);
+        setError('Failed to load product');
+      } finally {
+        setLoading(false);
+      }
+    };
+
     if (slug) {
       fetchProduct();
     }
   }, [slug]);
-
-  const fetchProduct = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch(`/api/products/${slug}`);
-      if (!response.ok) {
-        if (response.status === 404) {
-          setError('Product not found');
-        } else {
-          throw new Error('Failed to fetch product');
-        }
-        return;
-      }
-      
-      const data = await response.json();
-      setProduct(data.product);
-      
-      // Set default color if available
-      if (data.product.colors) {
-        try {
-          const colors = JSON.parse(data.product.colors);
-          if (colors.length > 0) {
-            setSelectedColor(colors[0]);
-          }
-        } catch {
-          // If colors isn't JSON, use as single color
-          setSelectedColor(data.product.colors);
-        }
-      }
-    } catch (err) {
-      setError('Failed to load product');
-      console.error('Product fetch error:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleAddToCart = () => {
     if (!product) return;
@@ -93,15 +111,35 @@ export default function ProductDetailPage() {
     const cartItem = {
       id: product.id,
       name: product.name,
-      price: product.price,
+      price: product.salePrice,
       quantity,
-      color: selectedColor,
-      image: product.images.find(img => img.isPrimary)?.url || '',
+      color: selectedColor || 'Default',
+      image: product.images.find(img => img.isPrimary)?.url || product.image || '',
     };
 
-    // Add to cart (we'll implement cart later)
-    console.log('Adding to cart:', cartItem);
-    alert('Product added to cart! (Cart functionality coming soon)');
+    // Get existing cart items or initialize empty cart
+    const existingCart = JSON.parse(localStorage.getItem('cart') || '[]');
+    
+    // Check if item already exists in cart
+    const existingItemIndex = existingCart.findIndex((item: { id: string; color: string }) => item.id === product.id && item.color === cartItem.color);
+    
+    if (existingItemIndex >= 0) {
+      // Update quantity if item exists
+      existingCart[existingItemIndex].quantity += quantity;
+    } else {
+      // Add new item to cart
+      existingCart.push(cartItem);
+    }
+    
+    // Save updated cart to localStorage
+    localStorage.setItem('cart', JSON.stringify(existingCart));
+    
+    // Dispatch custom event to update cart count in navigation
+    window.dispatchEvent(new Event('cartUpdated'));
+    
+    // Show success message and redirect to checkout
+    alert(`${product.name} added to cart!`);
+    window.location.href = '/checkout';
   };
 
   if (loading) {
@@ -133,32 +171,30 @@ export default function ProductDetailPage() {
     );
   }
 
-  const availableColors = (() => {
-    try {
-      return JSON.parse(product.colors);
-    } catch {
-      return [product.colors];
-    }
-  })();
-
   return (
-    <div className="min-h-screen bg-[#fff4e3]">
-      {/* Header */}
-      <div className="bg-white shadow-sm">
+    <div className="min-h-screen bg-custom-background">
+      <Navigation />
+      
+      {/* Breadcrumb */}
+      <div className="bg-white/90 backdrop-blur-sm shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="flex items-center space-x-2 text-sm">
-            <Link href="/" className="text-[#d8d68d] hover:text-[#c8c67d]">
+            <Link href="/" className="text-brand-secondary hover:text-brand-secondary/80">
               Home
             </Link>
             <span className="text-gray-400">/</span>
-            <Link href="/products" className="text-[#d8d68d] hover:text-[#c8c67d]">
+            <Link href="/products" className="text-brand-secondary hover:text-brand-secondary/80">
               Products
             </Link>
             <span className="text-gray-400">/</span>
-            <Link href={`/products?category=${product.category.slug}`} className="text-[#d8d68d] hover:text-[#c8c67d]">
-              {product.category.name}
-            </Link>
-            <span className="text-gray-400">/</span>
+            {product.category && (
+              <>
+                <Link href={`/products?category=${product.category.slug}`} className="text-brand-secondary hover:text-brand-secondary/80">
+                  {product.category.name}
+                </Link>
+                <span className="text-gray-400">/</span>
+              </>
+            )}
             <span className="text-gray-600">{product.name}</span>
           </div>
         </div>
@@ -176,7 +212,15 @@ export default function ProductDetailPage() {
                   alt={product.images[selectedImage]?.alt || product.name}
                   width={600}
                   height={600}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain p-4"
+                />
+              ) : product.image ? (
+                <Image
+                  src={product.image}
+                  alt={product.name}
+                  width={600}
+                  height={600}
+                  className="w-full h-full object-contain p-4"
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-gray-400">
@@ -214,11 +258,11 @@ export default function ProductDetailPage() {
           {/* Product Details */}
           <div className="space-y-6">
             <div>
-              <div className="text-sm text-gray-500 mb-2">{product.category.name}</div>
+              <div className="text-sm text-gray-500 mb-2">{product.category?.name || 'Uncategorized'}</div>
               <h1 className="text-3xl font-bold text-gray-900 mb-4">{product.name}</h1>
               <div className="flex items-center space-x-4 mb-4">
                 <span className="text-3xl font-bold text-gray-900">
-                  ${product.price.toFixed(2)}
+                  ${product.salePrice.toFixed(2)}
                 </span>
                 {product.featured && (
                   <span className="bg-[#d8d68d] text-gray-800 px-2 py-1 rounded-md text-sm font-medium">
@@ -226,42 +270,63 @@ export default function ProductDetailPage() {
                   </span>
                 )}
               </div>
-              <p className="text-gray-600 leading-relaxed">{product.description}</p>
+              <p className="text-gray-600 leading-relaxed">
+                Handcrafted with love using {product.yarn}. This beautiful piece takes approximately {Math.ceil(product.timeMinutes / 60)} hours to create and is perfect for any crochet enthusiast.
+              </p>
             </div>
 
             {/* Product Specifications */}
             <div className="bg-white rounded-lg p-6 shadow-md">
-              <h3 className="font-semibold text-gray-900 mb-4">Product Details</h3>
+              <h3 className="font-semibold text-gray-900 mb-4">Project Details</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                 <div>
-                  <span className="font-medium text-gray-700">Materials:</span>
-                  <p className="text-gray-600">{product.materials}</p>
+                  <span className="font-medium text-gray-700">Yarn:</span>
+                  <p className="text-gray-600">{product.yarn} ({product.yarnGrams}g)</p>
                 </div>
-                {product.dimensions && (
+                {product.polyfilGrams > 0 && (
                   <div>
-                    <span className="font-medium text-gray-700">Dimensions:</span>
-                    <p className="text-gray-600">{product.dimensions}</p>
+                    <span className="font-medium text-gray-700">Stuffing:</span>
+                    <p className="text-gray-600">{product.polyfilGrams}g polyfil</p>
                   </div>
                 )}
-                {product.weight && (
+                {product.eyesUsed !== 'None' && (
                   <div>
-                    <span className="font-medium text-gray-700">Weight:</span>
-                    <p className="text-gray-600">{product.weight}</p>
+                    <span className="font-medium text-gray-700">Eyes:</span>
+                    <p className="text-gray-600">{product.eyesUsed}</p>
                   </div>
                 )}
                 <div>
-                  <span className="font-medium text-gray-700">Difficulty:</span>
-                  <p className="text-gray-600">{product.difficulty}</p>
-                </div>
-                <div>
-                  <span className="font-medium text-gray-700">Estimated Days:</span>
-                  <p className="text-gray-600">{product.estimatedDays} days to complete</p>
-                </div>
-                <div>
-                  <span className="font-medium text-gray-700">Stock:</span>
-                  <p className={`${product.inStock ? 'text-green-600' : 'text-red-600'}`}>
-                    {product.inStock ? `In Stock (${product.stockCount} available)` : 'Out of Stock'}
+                  <span className="font-medium text-gray-700">Status:</span>
+                  <p className={`${
+                    product.status === 'in_stock' ? 'text-green-600' : 
+                    product.status === 'made_to_order' ? 'text-blue-600' : 'text-gray-600'
+                  }`}>
+                    {product.status === 'in_stock' ? 'Ready to Ship' : 
+                     product.status === 'made_to_order' ? 'Made to Order' : 'Coming Soon'}
                   </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Cost Breakdown */}
+            <div className="bg-white rounded-lg p-6 shadow-md">
+              <h3 className="font-semibold text-gray-900 mb-4">Cost Information</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="font-medium text-gray-700">Material Costs:</span>
+                  <p className="text-gray-600">${(product.yarnCost + product.polyfilCost + product.eyesCost).toFixed(2)}</p>
+                </div>
+                <div>
+                  <span className="font-medium text-gray-700">Labor Cost:</span>
+                  <p className="text-gray-600">${product.laborWage.toFixed(2)}</p>
+                </div>
+                <div>
+                  <span className="font-medium text-gray-700">Total Cost:</span>
+                  <p className="text-gray-600">${product.calculatedPrice.toFixed(2)}</p>
+                </div>
+                <div>
+                  <span className="font-medium text-gray-700">Profit Margin:</span>
+                  <p className="text-green-600">{product.profitMargin.toFixed(1)}%</p>
                 </div>
               </div>
             </div>
@@ -290,36 +355,45 @@ export default function ProductDetailPage() {
 
             {/* Quantity and Add to Cart */}
             <div className="space-y-4">
-              <div>
-                <label htmlFor="quantity" className="block font-medium text-gray-900 mb-2">
-                  Quantity
-                </label>
-                <select
-                  id="quantity"
-                  value={quantity}
-                  onChange={(e) => setQuantity(parseInt(e.target.value))}
-                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#d8d68d]"
-                  disabled={!product.inStock}
-                >
-                  {Array.from({ length: Math.min(product.stockCount, 10) }, (_, i) => i + 1).map((num) => (
-                    <option key={num} value={num}>
-                      {num}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              {product.status !== 'draft' && (
+                <div>
+                  <label htmlFor="quantity" className="block font-medium text-gray-900 mb-2">
+                    Quantity
+                  </label>
+                  <select
+                    id="quantity"
+                    value={quantity}
+                    onChange={(e) => setQuantity(parseInt(e.target.value))}
+                    className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#d8d68d]"
+                    disabled={product.status === 'draft'}
+                  >
+                    {Array.from({ length: 5 }, (_, i) => i + 1).map((num) => (
+                      <option key={num} value={num}>
+                        {num}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
               <button
                 onClick={handleAddToCart}
-                disabled={!product.inStock}
+                disabled={product.status === 'draft'}
                 className={`w-full py-3 px-6 rounded-md font-medium transition-colors ${
-                  product.inStock
+                  product.status !== 'draft'
                     ? 'bg-[#d8d68d] hover:bg-[#c8c67d] text-gray-800'
                     : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                 }`}
               >
-                {product.inStock ? 'Add to Cart' : 'Out of Stock'}
+                {product.status === 'in_stock' ? 'Add to Cart' : 
+                 product.status === 'made_to_order' ? 'Order Custom' : 'Coming Soon'}
               </button>
+
+              {product.status === 'made_to_order' && (
+                <div className="text-center text-sm text-blue-600">
+                  🕐 This item is made to order • Please allow {Math.ceil(product.timeMinutes / 60 / 8)} business days
+                </div>
+              )}
 
               <div className="text-center text-sm text-gray-600">
                 💝 Handmade with love by Cera • 🚚 Free shipping on orders over $50
@@ -328,6 +402,8 @@ export default function ProductDetailPage() {
           </div>
         </div>
       </div>
+      
+      <Footer />
     </div>
   );
 }

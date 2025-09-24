@@ -21,31 +21,40 @@ model Category {
   updatedAt   DateTime  @updatedAt
 }
 
-// Products (crochet items)
+// Products (crochet items) - Detailed inventory tracking
 model Product {
   id          String   @id @default(cuid())
   name        String
   slug        String   @unique
-  description String
-  price       Float
   
-  // Product details
-  materials   String   // "100% cotton yarn"
-  dimensions  String?  // "12x16 inches"
-  weight      String?  // "2 lbs"
-  colors      String   // JSON array of available colors
+  // Materials and costs
+  yarn        String   // Type/brand of yarn used
+  yarnGrams   Int      // Grams of yarn required
+  yarnCost    Float    // Cost of yarn used
   
-  // Inventory
-  inStock     Boolean  @default(true)
-  stockCount  Int      @default(0)
+  polyfilGrams Int     // Grams of polyfil stuffing
+  polyfilCost  Float   // Cost of polyfil used
   
-  // Production info
-  estimatedDays Int    @default(14) // Days to complete
-  difficulty    String @default("Intermediate") // Beginner, Intermediate, Advanced
+  eyesUsed    String   // Type/size of safety eyes
+  eyesCost    Float    // Cost of eyes used
   
-  // Relationships
-  categoryId  String
-  category    Category @relation(fields: [categoryId], references: [id])
+  // Production details
+  hookSize     String  // Crochet hook size (e.g., "5.5mm", "H/8")
+  timeMinutes  Int     // Total minutes to complete project
+  
+  // Pricing calculations
+  laborWage      Float // Labor cost based on time
+  calculatedPrice Float // Materials + Labor
+  salePrice      Float // Final selling price
+  profitMargin   Float // Profit margin percentage
+  
+  // Status and presentation
+  status      String   // in_stock, made_to_order, draft
+  image       String?  // Primary product image URL
+  
+  // Legacy relationships (keeping for compatibility)
+  categoryId  String?
+  category    Category? @relation(fields: [categoryId], references: [id])
   images      ProductImage[]
   orderItems  OrderItem[]
   
@@ -54,6 +63,9 @@ model Product {
   active      Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  
+  // Indexes
+  @@index([name])
 }
 
 // Product images
