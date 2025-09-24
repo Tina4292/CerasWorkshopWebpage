@@ -174,22 +174,16 @@ AI designed modular components for:
 #### **🔄 Lessons Learned and Future Improvements:**
 
 **For Next AI-Assisted Project:**
-- [What would you do differently from the start?]
-- [Which AI collaboration strategies proved most effective?]
-- [What preparation or setup would improve the process?]
-- [How would you structure the development phases differently?]
+- [What would you do differently from the start?] - I would do more research on the things I wished to impliment. I wanted to add SqaurePay as a payment option but that made things more difficult as it kept running into DOM issues from Square.
+- [Which AI collaboration strategies proved most effective?] - I used Chat GPT 5 to help with prompts and simple business tasks that weren't coding. I used copilot to help with code, errors, and scaffolding. I found that sometimes AI gets stuck in a loop and you have to stop it and manually check your code. I also had it run frequent error and redundency checks so I could find problems before they got out of hand.
+- [What preparation or setup would improve the process?] - More research on pay options as mentioned above. I need to get a bit better at the MERN stack as i'm most familiar with the MEAN stack and thee MERN was the better option for my choice of project. I also still need to work on wording for AI prompts.
+- [How would you structure the development phases differently?] - I would definitely leave adding the API as a later item. While it was listed as critical in my itenerary it actually caused a lot of errors and at one point some major corruption that I could have avoided had I added it later.
 
 **Personal Growth and Insights:**
-- [What new skills or knowledge did you gain?]
-- [How has your perspective on AI assistance changed?]
-- [What surprised you most about the development process?]
-- [What advice would you give to others starting AI-assisted development?]
-
-**Business and Technical Takeaways:**
-- [What did you learn about e-commerce development?]
-- [Which technical patterns or practices will you continue using?]
-- [How did this project change your approach to web development?]
-- [What business insights emerged from building this platform?]
+- [What new skills or knowledge did you gain?] - I've gotten significantly better at using copilot. I've learned how to word things for coding specific projects better so AI knows what it needs to do.
+- [How has your perspective on AI assistance changed?] - I love it, it's been enjoyable. I can still go through and manually change anything I need to, but the bulk of the coding being done by AI leads me to being more creative. I also find that checking for errors and redundencies is not nearly as frustrating with AI.
+- [What surprised you most about the development process?] - I was shocked to see just how much AI could do and how good it was at managing things and solving problems.
+- [What advice would you give to others starting AI-assisted development?] - play around with AI before you work on anything too serious. If you start on a larger project and it gets complicated you may wind up in a place where you're struggling and everything is breaking and you have to spend double the time cleaning up code and fixing errors.
 
 ---
 
